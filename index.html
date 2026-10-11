@@ -63,9 +63,16 @@ button.save:disabled{opacity:.55}
 </div>
 
 <div class="card">
-  <label>Laadstroom Alfen</label>
-  <div class="seg"><button type="button" id="a7">7 A · 4,8 kW</button><button type="button" id="a8" class="on">8 A · 5,5 kW</button></div>
-  <p class="hint">Houd de maandpiek van 6,976 kW onder controle.</p>
+  <div class="row"><label for="alfen">Laadstroom Alfen</label><span class="val"><span id="alfenV">8</span> A</span></div>
+  <input type="range" id="alfen" min="6" max="16" step="1" value="8">
+  <div class="ticks"><span>6 A</span><span>11 A</span><span>16 A</span></div>
+  <p class="hint">Dat is <b id="alfenKw">5,5</b> kW (3 fasen). Standaard 8 A.</p>
+</div>
+
+<div class="card">
+  <label for="piek">Maandpiek (kW)</label>
+  <input type="number" id="piek" min="2.5" max="15" step="0.001" inputmode="decimal" value="6.976">
+  <p class="hint" id="piekHint">De hoogste kwartierpiek van deze maand. Kijk elke maand in Mijn Fluvius en pas ze hier aan. Oktober 2026: 6,976 kW.</p>
 </div>
 
 <div class="card sum" id="sum"></div>
@@ -82,9 +89,11 @@ var TOPIC = "kevin-fox-set-eed69980a5";
 var SERVER = "https://ntfy.sh";
 var ACCU_KWH = 70;          // bruikbare accu van de Mach-E (schatting)
 var $ = function (id) { return document.getElementById(id); };
-var alfen = 8;
+var STANDAARD_PIEK = 6.976;   // oktober 2026
+var SLUIMER = 0.95;           // maximaal sluimerverbruik van het huis (kW)
 
-function kw() { return alfen === 7 ? 4.8 : 5.5; }
+function kw() { return Math.round(+$("alfen").value * 0.69 * 10) / 10; }
+function komma(x, d) { return x.toFixed(d).replace(".", ","); }
 
 function uren(h) {
   var m = Math.round(h * 60), u = Math.floor(m / 60), mm = m % 60;
@@ -98,23 +107,31 @@ function herteken() {
   var doel = +$("doel").value, aank = +$("aankomst").value;
   $("doelV").textContent = doel;
   $("aankomstV").textContent = aank;
-  $("a7").className = alfen === 7 ? "on" : "";
-  $("a8").className = alfen === 8 ? "on" : "";
+  $("alfenV").textContent = $("alfen").value;
+  $("alfenKw").textContent = komma(kw(), 1);
   var nodig = Math.max(0, doel - aank) / 100 * ACCU_KWH;
   var net = nodig / 0.9;
   var vm = naarMin($("vertrek").value);
   if (vm >= 180 && vm <= 720) $("vertrekS").value = vm;
   var tekst = "<b>" + Math.round(nodig) + " kWh</b> bijladen (±" + Math.round(net) + " kWh uit het net). " +
-              "Laadtijd ±<b>" + uren(net / kw()) + "</b> aan " + String(kw()).replace(".", ",") + " kW. " +
+              "Laadtijd ±<b>" + uren(net / kw()) + "</b> aan " + komma(kw(), 1) + " kW. " +
               "Klaar om <b>" + $("vertrek").value + "</b>.";
   $("sum").innerHTML = tekst;
   var w = $("warn"), fouten = [];
   if (aank >= doel) fouten.push("Het SOC bij aansluiten moet lager zijn dan het gewenste SOC.");
   var v = $("vertrek").value.split(":");
   if (v.length !== 2 || +v[0] < 3 || +v[0] > 12) fouten.push("Kies een vertrekuur tussen 03:00 en 12:00.");
+  var piek = +$("piek").value;
+  if (!(piek >= 2.5 && piek <= 15)) fouten.push("Vul een maandpiek in tussen 2,5 en 15 kW.");
+  else if (kw() + SLUIMER > piek) {
+    var maxA = Math.max(6, Math.floor((piek - SLUIMER) / 0.69));
+    fouten.push("Let op: " + komma(kw(), 1) + " kW + sluimerverbruik " + komma(SLUIMER, 2) + " kW is hoger dan de maandpiek " + komma(piek, 3) +
+                " kW. De melding begrenst het laden op ±" + maxA + " A.");
+    fouten.info = true;
+  }
   w.style.display = fouten.length ? "block" : "none";
   w.innerHTML = fouten.join("<br>");
-  $("save").disabled = fouten.length > 0;
+  $("save").disabled = fouten.length > 0 && !fouten.info;
 }
 
 function toon(klasse, tekst) {
@@ -124,7 +141,7 @@ function toon(klasse, tekst) {
 }
 
 function opslaan() {
-  var keuze = { doel: +$("doel").value, vertrek: $("vertrek").value, aankomst: +$("aankomst").value, alfen_a: alfen };
+  var keuze = { doel: +$("doel").value, vertrek: $("vertrek").value, aankomst: +$("aankomst").value, alfen_a: +$("alfen").value, piek_kw: +$("piek").value };
   $("save").disabled = true;
   toon("", "");
   return fetch(SERVER + "/" + TOPIC, { method: "POST", body: JSON.stringify(keuze) })
@@ -132,7 +149,7 @@ function opslaan() {
       if (!r.ok) throw new Error("status " + r.status);
       try { localStorage.setItem("fox-keuze", JSON.stringify(keuze)); } catch (e) {}
       toon("ok", "Opgeslagen: " + keuze.doel + "% om " + keuze.vertrek + ", aankomst " + keuze.aankomst +
-                 "%, Alfen " + keuze.alfen_a + " A. Je krijgt binnen 2 uur een melding met het nieuwe plan.");
+                 "%, Alfen " + keuze.alfen_a + " A, maandpiek " + komma(keuze.piek_kw, 3) + " kW. Je krijgt binnen 2 uur een melding met het nieuwe plan.");
     })
     .catch(function (e) {
       toon("fout", "Opslaan is niet gelukt (" + e.message + "). Controleer je internetverbinding en probeer opnieuw.");
@@ -143,7 +160,9 @@ function opslaan() {
 function vul(k) {
   if (!k) return;
   $("doel").value = k.doel; $("aankomst").value = k.aankomst; $("vertrek").value = k.vertrek;
-  alfen = +k.alfen_a === 7 ? 7 : 8;
+  var a = Math.round(+k.alfen_a);
+  $("alfen").value = a >= 6 && a <= 16 ? a : 8;
+  $("piek").value = k.piek_kw ? k.piek_kw : STANDAARD_PIEK;
 }
 
 function startwaarden() {
@@ -166,17 +185,15 @@ function startwaarden() {
     .catch(function () {})
     .then(function () {
       if (p.get("test")) {            // alleen voor het testen van de pagina
-        vul({ doel: +p.get("doel") || 80, vertrek: p.get("vertrek") || "06:00", aankomst: +p.get("aankomst") || 50, alfen_a: +p.get("alfen") || 8 });
+        vul({ doel: +p.get("doel") || 80, vertrek: p.get("vertrek") || "06:00", aankomst: +p.get("aankomst") || 50, alfen_a: +p.get("alfen") || 8, piek_kw: +p.get("piek") || STANDAARD_PIEK });
         herteken();
         return opslaan();
       }
     });
 }
 
-["doel", "aankomst", "vertrek"].forEach(function (id) { $(id).addEventListener("input", herteken); });
+["doel", "aankomst", "vertrek", "alfen", "piek"].forEach(function (id) { $(id).addEventListener("input", herteken); });
 $("vertrekS").addEventListener("input", function () { $("vertrek").value = naarTijd(+$("vertrekS").value); herteken(); });
-$("a7").addEventListener("click", function () { alfen = 7; herteken(); });
-$("a8").addEventListener("click", function () { alfen = 8; herteken(); });
 $("save").addEventListener("click", opslaan);
 herteken();
 startwaarden().then(herteken);
