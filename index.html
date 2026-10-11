@@ -30,6 +30,7 @@ input[type=number]{color-scheme:dark;font:inherit;font-size:26px;font-weight:800
 input[type=time]{color-scheme:dark;font:inherit;font-size:26px;font-weight:800;color:var(--blue);background:rgba(10,15,18,.55);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;width:100%;margin-top:8px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .seg button{font:inherit;font-weight:700;padding:12px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+input[type=range].klein{height:26px;width:82%;display:block;margin:2px auto 0}
 .seg button.on{background:var(--blue);border-color:var(--blue);color:#fff}
 .sum{background:var(--blue-s);border-color:var(--blue)}
 .sum b{color:var(--blue)}
@@ -78,9 +79,11 @@ button.save:disabled{opacity:.55}
 
 <div class="card">
   <div class="row"><label for="alfen">Laadstroom Alfen</label><span class="val"><span id="alfenV">8</span> A</span></div>
-  <input type="range" id="alfen" min="6" max="16" step="1" value="8">
-  <div class="ticks"><span>6 A</span><span>11 A</span><span>16 A</span></div>
-  <p class="hint">Dat is <b id="alfenKw">5,5</b> kW (3 fasen). Standaard 8 A.</p>
+  <div class="seg"><button type="button" id="a7">7 A · 4,8 kW</button><button type="button" id="a8">8 A · 5,5 kW</button></div>
+  <p class="hint" style="margin-top:12px">Andere stroomsterkte? Schuif (6 tot 16 A):</p>
+  <input type="range" class="klein" id="alfen" min="6" max="16" step="1" value="8" aria-label="Laadstroom Alfen">
+  <div class="ticks" style="width:82%;margin:-2px auto 0"><span>6 A</span><span>11 A</span><span>16 A</span></div>
+  <p class="hint">Gekozen: <b id="alfenKw">5,5</b> kW (3 fasen).</p>
 </div>
 
 <div class="card">
@@ -122,6 +125,8 @@ function herteken() {
   $("doelV").textContent = doel;
   $("aankomstV").textContent = aank;
   $("alfenV").textContent = $("alfen").value;
+  $("a7").className = +$("alfen").value === 7 ? "on" : "";
+  $("a8").className = +$("alfen").value === 8 ? "on" : "";
   $("alfenKw").textContent = komma(kw(), 1);
   var nodig = Math.max(0, doel - aank) / 100 * ACCU_KWH;
   var net = nodig / 0.9;
@@ -208,6 +213,8 @@ function startwaarden() {
 
 ["doel", "aankomst", "vertrek", "alfen", "piek"].forEach(function (id) { $(id).addEventListener("input", herteken); });
 $("vertrekS").addEventListener("input", function () { $("vertrek").value = naarTijd(+$("vertrekS").value); herteken(); });
+$("a7").addEventListener("click", function () { $("alfen").value = 7; herteken(); });
+$("a8").addEventListener("click", function () { $("alfen").value = 8; herteken(); });
 $("save").addEventListener("click", opslaan);
 herteken();
 startwaarden().then(herteken);
