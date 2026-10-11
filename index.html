@@ -4,23 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Instellingen Ford en batterij</title>
-<meta name="theme-color" content="#0b6e8a">
+<meta name="theme-color" content="#0b1115">
+<meta name="color-scheme" content="dark">
 <style>
-:root{--ink:#14222b;--mut:#51636e;--line:#cfdbe2;--bg:#f3f7f9;--card:#fff;--blue:#0b6e8a;--blue-s:#dcf0f6;--green:#2f7d4f;--green-s:#dff1e5;--red:#b3321c;--red-s:#fbe3dd;--orange:#c26a00;--orange-s:#fdebcf}
-@media (prefers-color-scheme:dark){:root{--ink:#e8eff3;--mut:#9db0ba;--line:#34454f;--bg:#10181d;--card:#1a252b;--blue:#4cb7d3;--blue-s:#173540;--green:#6fcf97;--green-s:#1b3326;--red:#ff8b73;--red-s:#40211b;--orange:#ffb454;--orange-s:#402e14}}
+:root{--ink:#eaf1f5;--mut:#a3b4be;--line:rgba(255,255,255,.14);--bg:#0b1115;--card:rgba(22,31,37,.80);--blue:#5cc3df;--blue-s:rgba(23,64,78,.82);--green:#4fbf83;--green-s:rgba(24,58,40,.85);--red:#ff8b73;--red-s:rgba(64,33,27,.88);--orange:#ffb454;--orange-s:rgba(64,46,20,.88)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,Arial,sans-serif;font-size:17px;line-height:1.4}
-main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+body{margin:0;min-height:100vh;color:var(--ink);background:linear-gradient(180deg,rgba(7,11,14,.86),rgba(7,11,14,.94)),url("achtergrond.jpg") center/cover fixed no-repeat,radial-gradient(ellipse at 50% 0%,#1b2a33,#0b1115 70%);font-family:"Segoe UI",system-ui,Arial,sans-serif;font-size:17px;line-height:1.4}
+main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:16px 16px 40px}
+.kop{display:flex;align-items:center;gap:14px;margin:4px 0 4px}
+.kop img{height:34px;max-width:150px;object-fit:contain;display:none}
+.kop .merk{font-weight:800;letter-spacing:.14em;font-size:15px;color:var(--blue)}
+.auto{position:fixed;left:0;right:0;bottom:0;height:34vh;z-index:0;pointer-events:none;opacity:.20;display:flex;align-items:flex-end;justify-content:center}
+.auto svg{width:min(980px,120vw);height:auto}
+body.foto .auto{display:none}
 h1{font-size:22px;margin:6px 0 2px}
 .sub{color:var(--mut);font-size:14px;margin:0 0 14px}
-.card{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.card{background:var(--card);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
 .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 label{font-weight:700}
 .val{font-size:26px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
 .hint{color:var(--mut);font-size:13.5px;margin:2px 0 0}
 input[type=range]{width:100%;height:44px;accent-color:var(--blue);margin:6px 0 0}
 .ticks{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-top:-4px}
-input[type=time]{font:inherit;font-size:26px;font-weight:800;color:var(--blue);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;width:100%;margin-top:8px}
+input[type=number]{color-scheme:dark;font:inherit;font-size:26px;font-weight:800;color:var(--blue);background:rgba(10,15,18,.55);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;width:100%;margin-top:8px}
+input[type=time]{color-scheme:dark;font:inherit;font-size:26px;font-weight:800;color:var(--blue);background:rgba(10,15,18,.55);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;width:100%;margin-top:8px}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .seg button{font:inherit;font-weight:700;padding:12px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
 .seg button.on{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -36,7 +43,14 @@ button.save:disabled{opacity:.55}
 </style>
 </head>
 <body>
+<div class="auto" aria-hidden="true">
+<svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg"><g fill="#9aa3a8">
+<path d="M40 190c0-22 14-34 38-40l92-20c34-30 86-62 150-72 78-12 164-6 232 22 44 18 84 42 120 70l58 14c46 10 70 22 74 44l4 28c0 10-8 16-18 16h-52a72 72 0 0 0-144 0H342a72 72 0 0 0-144 0H62c-14 0-22-8-22-20z"/>
+</g><g fill="#0b1115"><circle cx="270" cy="206" r="58"/><circle cx="270" cy="206" r="34" fill="#6d767b"/><circle cx="270" cy="206" r="16" fill="#0b1115"/>
+<circle cx="636" cy="206" r="58"/><circle cx="636" cy="206" r="34" fill="#6d767b"/><circle cx="636" cy="206" r="16" fill="#0b1115"/></g></svg>
+</div>
 <main>
+<div class="kop"><img id="logo" src="logo-foxess.png" alt="FOX ESS" onload="this.style.display='block';document.getElementById('merk').style.display='none'" onerror="this.remove()"><span class="merk" id="merk">FOX ESS</span></div>
 <h1>Instellingen Ford en batterij</h1>
 <p class="sub">Kevin &amp; Tamara · Mach-E · FOX 24 kWh</p>
 
@@ -197,6 +211,7 @@ $("vertrekS").addEventListener("input", function () { $("vertrek").value = naarT
 $("save").addEventListener("click", opslaan);
 herteken();
 startwaarden().then(herteken);
+(function () { var i = new Image(); i.onload = function () { document.body.className = "foto"; }; i.src = "achtergrond.jpg"; })();
 </script>
 </body>
 </html>
