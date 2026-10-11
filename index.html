@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#0a0b0b">
 <meta name="color-scheme" content="dark">
 <style>
-:root{--ink:#f4f5f4;--mut:#c4c9c6;--line:rgba(200,206,202,.26);--bg:#0a0b0b;--card:rgba(16,18,18,.86);--blue:#a4cc3a;--blue-s:rgba(40,52,14,.88);--green:#a4cc3a;--green-s:rgba(40,52,14,.88);--red:#ff8f7a;--red-s:rgba(76,30,26,.90);--orange:#ffd23a;--orange-s:rgba(72,54,10,.90)}
+:root{--ink:#f4f5f4;--mut:#c4c9c6;--line:rgba(200,206,202,.26);--bg:#0a0b0b;--card:rgba(16,18,18,.86);--blue:#93ab63;--blue-s:rgba(36,44,24,.88);--green:#93ab63;--green-s:rgba(36,44,24,.88);--red:#ff8f7a;--red-s:rgba(76,30,26,.90);--orange:#ffd23a;--orange-s:rgba(72,54,10,.90)}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;color:var(--ink);background:linear-gradient(180deg,rgba(10,11,11,.76),rgba(6,7,7,.93)),url("achtergrond.jpg") center/cover fixed no-repeat,radial-gradient(ellipse at 50% 0%,#3d4144,#1d2022 45%,#080909 85%);font-family:"Segoe UI",system-ui,Arial,sans-serif;font-size:17px;line-height:1.4}
 main{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:16px 16px 40px}
@@ -23,7 +23,7 @@ body.foto .auto{display:none}
 body.foto{background:linear-gradient(180deg,rgba(8,9,9,.44) 0%,rgba(7,8,8,.64) 45%,rgba(5,6,6,.91) 100%),url("achtergrond.jpg") center 62%/cover fixed no-repeat,#030b1f}
 @media (max-aspect-ratio:1/1){body.foto{--card:rgba(16,18,18,.68)}}
 @media (max-aspect-ratio:1/1){body.foto{background:linear-gradient(180deg,rgba(8,9,9,.82) 0%,rgba(7,8,8,.60) 55%,rgba(5,6,6,.34) 100%),url("achtergrond.jpg") 38% 100%/auto 62% no-repeat fixed,linear-gradient(180deg,#34383a,#080909 70%)}}
-body.foto::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 20%,rgba(164,204,58,.10),transparent 60%)}
+body.foto::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 20%,rgba(147,171,99,.10),transparent 60%)}
 h1{font-size:22px;margin:6px 0 2px}
 .sub{color:var(--mut);font-size:14px;margin:0 0 14px}
 .card{box-shadow:0 4px 18px rgba(0,0,0,.35),inset 0 0 0 1px rgba(200,206,202,.10);background:var(--card);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
@@ -53,9 +53,9 @@ button.save:disabled{opacity:.55}
 <body>
 <div class="auto" aria-hidden="true">
 <svg viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg" fill="none" stroke-linecap="round" stroke-linejoin="round">
-<line x1="0" y1="262" x2="1000" y2="262" stroke="#a4cc3a" stroke-opacity=".35" stroke-width="2"/>
+<line x1="0" y1="262" x2="1000" y2="262" stroke="#93ab63" stroke-opacity=".35" stroke-width="2"/>
 <!-- huis -->
-<g stroke="#a4cc3a" stroke-width="3" stroke-opacity=".9">
+<g stroke="#93ab63" stroke-width="3" stroke-opacity=".9">
 <path d="M60 262V150l130-86 130 86v112z" fill="#222627" fill-opacity=".55"/>
 <path d="M40 156 190 56l150 100"/>
 <rect x="95" y="180" width="46" height="46" rx="3"/><line x1="118" y1="180" x2="118" y2="226"/><line x1="95" y1="203" x2="141" y2="203"/>
@@ -68,7 +68,7 @@ button.save:disabled{opacity:.55}
 <rect x="262" y="182" width="32" height="14" rx="3" fill="#aeb4b1" fill-opacity=".85"/><rect x="262" y="202" width="32" height="14" rx="3" fill="#aeb4b1" fill-opacity=".6"/><rect x="262" y="222" width="32" height="14" rx="3" fill="#aeb4b1" fill-opacity=".35"/>
 <path d="M282 150l-14 22h12l-6 18 18-26h-12z" fill="#ffd37a" stroke="#ffd37a" stroke-width="1"/></g>
 <!-- laadpaal -->
-<g stroke="#a4cc3a" stroke-width="3"><rect x="400" y="176" width="34" height="86" rx="8" fill="#222627" fill-opacity=".7"/><circle cx="417" cy="200" r="7" fill="#aeb4b1" stroke="none"/><rect x="408" y="218" width="18" height="12" rx="2"/></g>
+<g stroke="#93ab63" stroke-width="3"><rect x="400" y="176" width="34" height="86" rx="8" fill="#222627" fill-opacity=".7"/><circle cx="417" cy="200" r="7" fill="#aeb4b1" stroke="none"/><rect x="408" y="218" width="18" height="12" rx="2"/></g>
 <!-- stroomkabels -->
 <path class="stroom" d="M304 214C340 214 360 214 400 214" stroke="#ffd37a" stroke-width="4"/>
 <path class="stroom" d="M434 214C470 214 490 232 520 238" stroke="#ffd37a" stroke-width="4"/>
