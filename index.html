@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instellingen Ford en batterij</title>
+<meta name="theme-color" content="#0b6e8a">
+<style>
+:root{--ink:#14222b;--mut:#51636e;--line:#cfdbe2;--bg:#f3f7f9;--card:#fff;--blue:#0b6e8a;--blue-s:#dcf0f6;--green:#2f7d4f;--green-s:#dff1e5;--red:#b3321c;--red-s:#fbe3dd;--orange:#c26a00;--orange-s:#fdebcf}
+@media (prefers-color-scheme:dark){:root{--ink:#e8eff3;--mut:#9db0ba;--line:#34454f;--bg:#10181d;--card:#1a252b;--blue:#4cb7d3;--blue-s:#173540;--green:#6fcf97;--green-s:#1b3326;--red:#ff8b73;--red-s:#40211b;--orange:#ffb454;--orange-s:#402e14}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,Arial,sans-serif;font-size:17px;line-height:1.4}
+main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+h1{font-size:22px;margin:6px 0 2px}
+.sub{color:var(--mut);font-size:14px;margin:0 0 14px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+label{font-weight:700}
+.val{font-size:26px;font-weight:800;color:var(--blue);font-variant-numeric:tabular-nums}
+.hint{color:var(--mut);font-size:13.5px;margin:2px 0 0}
+input[type=range]{width:100%;height:44px;accent-color:var(--blue);margin:6px 0 0}
+.ticks{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-top:-4px}
+input[type=time]{font:inherit;font-size:26px;font-weight:800;color:var(--blue);background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:6px 10px;width:100%;margin-top:8px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.seg button{font:inherit;font-weight:700;padding:12px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+.seg button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.sum{background:var(--blue-s);border-color:var(--blue)}
+.sum b{color:var(--blue)}
+.warn{background:var(--orange-s);border-color:var(--orange);color:var(--ink)}
+button.save{width:100%;font:inherit;font-size:19px;font-weight:800;padding:16px;border:0;border-radius:12px;background:var(--green);color:#fff;margin-top:6px}
+button.save:disabled{opacity:.55}
+#status{margin-top:12px;padding:12px 14px;border-radius:10px;display:none;font-size:15.5px}
+#status.ok{display:block;background:var(--green-s);border:1.5px solid var(--green)}
+#status.fout{display:block;background:var(--red-s);border:1.5px solid var(--red)}
+.small{color:var(--mut);font-size:13px;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<h1>Instellingen Ford en batterij</h1>
+<p class="sub">Kevin &amp; Tamara · Mach-E · FOX 24 kWh</p>
+
+<div class="card">
+  <div class="row"><label for="doel">Gewenst SOC bij vertrek</label><span class="val"><span id="doelV">80</span>%</span></div>
+  <input type="range" id="doel" min="30" max="100" step="5" value="80">
+  <div class="ticks"><span>30%</span><span>65%</span><span>100%</span></div>
+  <p class="hint">Per 5%. Voor een lange rit: 100%.</p>
+</div>
+
+<div class="card">
+  <label for="vertrek">Vertrekuur</label>
+  <input type="time" id="vertrek" value="06:00" min="03:00" max="12:00" step="900">
+  <input type="range" id="vertrekS" min="180" max="720" step="15" value="360" aria-label="Vertrekuur met schuifbalk">
+  <div class="ticks"><span>03:00</span><span>07:30</span><span>12:00</span></div>
+  <p class="hint">Schuif per kwartier, of tik op het uur. De auto is dan klaar. Standaard 06:00.</p>
+</div>
+
+<div class="card">
+  <div class="row"><label for="aankomst">SOC bij aansluiten (aankomst)</label><span class="val"><span id="aankomstV">50</span>%</span></div>
+  <input type="range" id="aankomst" min="5" max="95" step="5" value="50">
+  <div class="ticks"><span>5%</span><span>50%</span><span>95%</span></div>
+  <p class="hint">Hoe vol is de Ford als hij 's avonds aan de lader gaat?</p>
+</div>
+
+<div class="card">
+  <label>Laadstroom Alfen</label>
+  <div class="seg"><button type="button" id="a7">7 A · 4,8 kW</button><button type="button" id="a8" class="on">8 A · 5,5 kW</button></div>
+  <p class="hint">Houd de maandpiek van 6,976 kW onder controle.</p>
+</div>
+
+<div class="card sum" id="sum"></div>
+<div class="card warn" id="warn" style="display:none"></div>
+
+<button class="save" id="save">Opslaan</button>
+<div id="status" role="status"></div>
+
+<p class="small">Na het opslaan krijg je binnen 2 uur een melding in de app ntfy met het nieuwe plan. Het geldt tot je het opnieuw aanpast.</p>
+</main>
+
+<script>
+var TOPIC = "kevin-fox-set-eed69980a5";
+var SERVER = "https://ntfy.sh";
+var ACCU_KWH = 70;          // bruikbare accu van de Mach-E (schatting)
+var $ = function (id) { return document.getElementById(id); };
+var alfen = 8;
+
+function kw() { return alfen === 7 ? 4.8 : 5.5; }
+
+function uren(h) {
+  var m = Math.round(h * 60), u = Math.floor(m / 60), mm = m % 60;
+  return u + " u " + (mm < 10 ? "0" : "") + mm + " min";
+}
+
+function naarMin(t) { var v = String(t).split(":"); return (+v[0]) * 60 + (+v[1]); }
+function naarTijd(m) { var u = Math.floor(m / 60), mm = m % 60; return (u < 10 ? "0" : "") + u + ":" + (mm < 10 ? "0" : "") + mm; }
+
+function herteken() {
+  var doel = +$("doel").value, aank = +$("aankomst").value;
+  $("doelV").textContent = doel;
+  $("aankomstV").textContent = aank;
+  $("a7").className = alfen === 7 ? "on" : "";
+  $("a8").className = alfen === 8 ? "on" : "";
+  var nodig = Math.max(0, doel - aank) / 100 * ACCU_KWH;
+  var net = nodig / 0.9;
+  var vm = naarMin($("vertrek").value);
+  if (vm >= 180 && vm <= 720) $("vertrekS").value = vm;
+  var tekst = "<b>" + Math.round(nodig) + " kWh</b> bijladen (±" + Math.round(net) + " kWh uit het net). " +
+              "Laadtijd ±<b>" + uren(net / kw()) + "</b> aan " + String(kw()).replace(".", ",") + " kW. " +
+              "Klaar om <b>" + $("vertrek").value + "</b>.";
+  $("sum").innerHTML = tekst;
+  var w = $("warn"), fouten = [];
+  if (aank >= doel) fouten.push("Het SOC bij aansluiten moet lager zijn dan het gewenste SOC.");
+  var v = $("vertrek").value.split(":");
+  if (v.length !== 2 || +v[0] < 3 || +v[0] > 12) fouten.push("Kies een vertrekuur tussen 03:00 en 12:00.");
+  w.style.display = fouten.length ? "block" : "none";
+  w.innerHTML = fouten.join("<br>");
+  $("save").disabled = fouten.length > 0;
+}
+
+function toon(klasse, tekst) {
+  var s = $("status");
+  s.className = klasse;
+  s.textContent = tekst;
+}
+
+function opslaan() {
+  var keuze = { doel: +$("doel").value, vertrek: $("vertrek").value, aankomst: +$("aankomst").value, alfen_a: alfen };
+  $("save").disabled = true;
+  toon("", "");
+  return fetch(SERVER + "/" + TOPIC, { method: "POST", body: JSON.stringify(keuze) })
+    .then(function (r) {
+      if (!r.ok) throw new Error("status " + r.status);
+      try { localStorage.setItem("fox-keuze", JSON.stringify(keuze)); } catch (e) {}
+      toon("ok", "Opgeslagen: " + keuze.doel + "% om " + keuze.vertrek + ", aankomst " + keuze.aankomst +
+                 "%, Alfen " + keuze.alfen_a + " A. Je krijgt binnen 2 uur een melding met het nieuwe plan.");
+    })
+    .catch(function (e) {
+      toon("fout", "Opslaan is niet gelukt (" + e.message + "). Controleer je internetverbinding en probeer opnieuw.");
+    })
+    .then(function () { herteken(); });
+}
+
+function vul(k) {
+  if (!k) return;
+  $("doel").value = k.doel; $("aankomst").value = k.aankomst; $("vertrek").value = k.vertrek;
+  alfen = +k.alfen_a === 7 ? 7 : 8;
+}
+
+function startwaarden() {
+  var p = new URLSearchParams(location.search);
+  var bewaard = null;
+  try { bewaard = JSON.parse(localStorage.getItem("fox-keuze")); } catch (e) {}
+  vul(bewaard);
+  return fetch(SERVER + "/" + TOPIC + "/json?poll=1&since=all")
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var beste = null;
+      t.split("\n").forEach(function (l) {
+        try {
+          var m = JSON.parse(l);
+          if (m.event === "message") { var k = JSON.parse(m.message); if (k && k.doel && (!beste || m.time >= beste.t)) beste = { t: m.time, k: k }; }
+        } catch (e) {}
+      });
+      if (beste) vul(beste.k);
+    })
+    .catch(function () {})
+    .then(function () {
+      if (p.get("test")) {            // alleen voor het testen van de pagina
+        vul({ doel: +p.get("doel") || 80, vertrek: p.get("vertrek") || "06:00", aankomst: +p.get("aankomst") || 50, alfen_a: +p.get("alfen") || 8 });
+        herteken();
+        return opslaan();
+      }
+    });
+}
+
+["doel", "aankomst", "vertrek"].forEach(function (id) { $(id).addEventListener("input", herteken); });
+$("vertrekS").addEventListener("input", function () { $("vertrek").value = naarTijd(+$("vertrekS").value); herteken(); });
+$("a7").addEventListener("click", function () { alfen = 7; herteken(); });
+$("a8").addEventListener("click", function () { alfen = 8; herteken(); });
+$("save").addEventListener("click", opslaan);
+herteken();
+startwaarden().then(herteken);
+</script>
+</body>
+</html>
