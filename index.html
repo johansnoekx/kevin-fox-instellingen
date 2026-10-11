@@ -135,7 +135,10 @@ var TOPIC = "kevin-fox-set-eed69980a5";
 var SERVER = "https://ntfy.sh";
 var ACCU_KWH = 70;          // bruikbare accu van de Mach-E (schatting)
 var $ = function (id) { return document.getElementById(id); };
-var STANDAARD_PIEK = 6.976;   // oktober 2026
+function maandVan(d) { return d.getFullYear() + "-" + (d.getMonth() < 9 ? "0" : "") + (d.getMonth() + 1); }
+var NU_MAAND = maandVan(new Date());
+var MIN_PIEK = 2.5;                                  // minimum van het capaciteitstarief
+var STANDAARD_PIEK = NU_MAAND === "2026-10" ? 6.976 : MIN_PIEK;   // oktober 2026: 6,976 kW; daarna elke maand opnieuw 2,5 kW
 var SLUIMER = 0.95;           // maximaal sluimerverbruik van het huis (kW)
 
 function kw() { return Math.round(+$("alfen").value * 0.69 * 10) / 10; }
@@ -171,7 +174,7 @@ function herteken() {
   if (v.length !== 2 || +v[0] < 3 || +v[0] > 12) fouten.push("Kies een vertrekuur tussen 03:00 en 12:00.");
   var piek = +$("piek").value;
   if (!(piek >= 2.5 && piek <= 15)) fouten.push("Vul een maandpiek in tussen 2,5 en 15 kW.");
-  else if (kw() + SLUIMER > piek) {
+  else if (piek > MIN_PIEK && kw() + SLUIMER > piek) {
     var maxA = Math.max(6, Math.floor((piek - SLUIMER) / 0.69));
     fouten.push("Let op: " + komma(kw(), 1) + " kW + sluimerverbruik " + komma(SLUIMER, 2) + " kW is hoger dan de maandpiek " + komma(piek, 3) +
                 " kW. De melding begrenst het laden op ±" + maxA + " A.");
@@ -195,6 +198,7 @@ function opslaan() {
   return fetch(SERVER + "/" + TOPIC, { method: "POST", body: JSON.stringify(keuze) })
     .then(function (r) {
       if (!r.ok) throw new Error("status " + r.status);
+      keuze.maand = NU_MAAND;
       try { localStorage.setItem("fox-keuze", JSON.stringify(keuze)); } catch (e) {}
       toon("ok", "Opgeslagen: " + keuze.doel + "% om " + keuze.vertrek + ", aankomst " + keuze.aankomst +
                  "%, Alfen " + keuze.alfen_a + " A, maandpiek " + komma(keuze.piek_kw, 3) + " kW. Je krijgt binnen 2 uur een melding met het nieuwe plan.");
@@ -205,19 +209,23 @@ function opslaan() {
     .then(function () { herteken(); });
 }
 
-function vul(k) {
+function vul(k, maand) {
   if (!k) return;
   $("doel").value = k.doel; $("aankomst").value = k.aankomst; $("vertrek").value = k.vertrek;
   var a = Math.round(+k.alfen_a);
   $("alfen").value = a >= 6 && a <= 16 ? a : 8;
-  $("piek").value = k.piek_kw ? k.piek_kw : STANDAARD_PIEK;
+  var oud = !!k.piek_kw && !!maand && maand !== NU_MAAND;   // piek uit een vorige maand
+  $("piek").value = k.piek_kw && !oud ? k.piek_kw : STANDAARD_PIEK;
+  if (oud || (!k.piek_kw && STANDAARD_PIEK === MIN_PIEK)) {
+    $("piekHint").innerHTML = "<b>Nieuwe maand: de maandpiek is teruggezet naar 2,5 kW.</b> Lees de piek af op de digitale meter (scherm 1.6.0) en vul ze hier in.";
+  }
 }
 
 function startwaarden() {
   var p = new URLSearchParams(location.search);
   var bewaard = null;
   try { bewaard = JSON.parse(localStorage.getItem("fox-keuze")); } catch (e) {}
-  vul(bewaard);
+  vul(bewaard, bewaard && bewaard.maand);
   return fetch(SERVER + "/" + TOPIC + "/json?poll=1&since=all")
     .then(function (r) { return r.text(); })
     .then(function (t) {
@@ -228,7 +236,7 @@ function startwaarden() {
           if (m.event === "message") { var k = JSON.parse(m.message); if (k && k.doel && (!beste || m.time >= beste.t)) beste = { t: m.time, k: k }; }
         } catch (e) {}
       });
-      if (beste) vul(beste.k);
+      if (beste) vul(beste.k, maandVan(new Date(beste.t * 1000)));
     })
     .catch(function () {})
     .then(function () {
